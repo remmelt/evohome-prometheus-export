@@ -63,7 +63,7 @@ func (u *UserAccount) process(a *authenticate.Authenticate) error {
 func (u *UserAccount) GetUserID(a *authenticate.Authenticate) (string, error) {
 	err := u.process(a)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	return u.UserAccountDetails.UserID
 }
@@ -71,7 +71,7 @@ func (u *UserAccount) GetUserID(a *authenticate.Authenticate) (string, error) {
 func (u *UserAccount) GetCity(a *authenticate.Authenticate) (string, error) {
 	err := u.process(a)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	return u.UserAccountDetails.City
 }
@@ -79,7 +79,7 @@ func (u *UserAccount) GetCity(a *authenticate.Authenticate) (string, error) {
 func (u *UserAccount) GetCountry(a *authenticate.Authenticate) (string, error) {
 	err := u.process(a)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	return u.UserAccountDetails.Country
 }
@@ -87,7 +87,7 @@ func (u *UserAccount) GetCountry(a *authenticate.Authenticate) (string, error) {
 func (u *UserAccount) GetFirstname(a *authenticate.Authenticate) (string, error) {
 	err := u.process(a)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	return u.UserAccountDetails.Firstname
 }
@@ -95,7 +95,7 @@ func (u *UserAccount) GetFirstname(a *authenticate.Authenticate) (string, error)
 func (u *UserAccount) GetLanguage(a *authenticate.Authenticate) (string, error) {
 	err := u.process(a)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	return u.UserAccountDetails.Language
 }
@@ -103,7 +103,7 @@ func (u *UserAccount) GetLanguage(a *authenticate.Authenticate) (string, error) 
 func (u *UserAccount) GetLastname(a *authenticate.Authenticate) (string, error) {
 	err := u.process(a)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	return u.UserAccountDetails.Lastname
 }
@@ -111,7 +111,7 @@ func (u *UserAccount) GetLastname(a *authenticate.Authenticate) (string, error) 
 func (u *UserAccount) GetPostcode(a *authenticate.Authenticate) (string, error) {
 	err := u.process(a)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	return u.UserAccountDetails.Postcode
 }
@@ -119,7 +119,7 @@ func (u *UserAccount) GetPostcode(a *authenticate.Authenticate) (string, error) 
 func (u *UserAccount) GetStreetAddress(a *authenticate.Authenticate) (string, error) {
 	err := u.process(a)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	return u.UserAccountDetails.StreetAddress
 }
@@ -127,7 +127,7 @@ func (u *UserAccount) GetStreetAddress(a *authenticate.Authenticate) (string, er
 func (u *UserAccount) GetUsername(a *authenticate.Authenticate) (string, error) {
 	err := u.process(a)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	return u.UserAccountDetails.Username
 }
