@@ -8,6 +8,7 @@ import (
 	"time"
 	"net/url"
 	"os"
+	"github.com/jcmturner/evohome-prometheus-export/logging"
 )
 
 const (
@@ -26,6 +27,7 @@ type Authenticate struct {
 	IdentityHeaders *idHeaders
 	authResponse
 	validUntil      time.Time
+	loggers		*logging.Loggers
 }
 
 type authResponse struct {
@@ -36,7 +38,8 @@ type authResponse struct {
 	Scope        string `json:"scope"`
 }
 
-func (a *Authenticate) NewRequest(cfg *restclient.Config) error {
+func (a *Authenticate) NewRequest(cfg *restclient.Config, logs *logging.Loggers) error {
+	a.loggers = logs
 	data := url.Values{}
 	data.Set("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
 	data.Set("Cache-Control", "no-store no-cache")
@@ -55,30 +58,26 @@ func (a *Authenticate) NewRequest(cfg *restclient.Config) error {
 	if err != nil {
 		return errors.New(fmt.Sprintf("Error building ReST request to authenticate: %v", err))
 	}
-
 	a.Request = req
+	a.loggers.Info.Println("New authentication request object configured")
 	return nil
 }
 
 func (a *Authenticate) Process() error {
-	if a.AccessToken == "" {
+	if a.AccessToken == "" || time.Now().After(a.validUntil) {
+		a.loggers.Info.Println("No OAuth token available or it has expired. Requeting one.")
 		err := a.callAuthService()
 		if err != nil {
 			return err
 		}
-	} else {
-		if time.Now().After(a.validUntil) {
-			err := a.callAuthService()
-			if err != nil {
-				return err
-			}
+		id := idHeaders{
+			Authorization: fmt.Sprintf("bearer %s", a.AccessToken),
+			ApplicationID: applicationID,
 		}
+		a.IdentityHeaders = &id
+	} else {
+		a.loggers.Info.Println("OAuth token still valid.")
 	}
-	id := idHeaders{
-		Authorization: fmt.Sprintf("bearer %s", a.AccessToken),
-		ApplicationID: applicationID,
-	}
-	a.IdentityHeaders = &id
 	return nil
 }
 
@@ -92,6 +91,7 @@ func (a *Authenticate) callAuthService() error {
 	}
 	if a.ExpiresIn > 0 {
 		a.validUntil = time.Now().Add(time.Duration(a.ExpiresIn) * time.Second)
+		a.loggers.Info.Printf("OAuth token retrieved. Valid until %v\n", a.validUntil)
 	}
 	return nil
 }

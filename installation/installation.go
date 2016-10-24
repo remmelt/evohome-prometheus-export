@@ -7,6 +7,7 @@ import (
 	"github.com/jcmturner/restclient"
 	"net/http"
 	"net/url"
+	"github.com/jcmturner/evohome-prometheus-export/logging"
 )
 
 const (
@@ -16,6 +17,7 @@ const (
 type Installation struct {
 	Request          *restclient.Request
 	InstallationInfo *[]installationInfo
+	loggers		*logging.Loggers
 }
 
 type ZoneInfo struct {
@@ -89,7 +91,8 @@ type installationInfo struct {
 	} `json:"gateways"`
 }
 
-func (i *Installation) NewRequest(userID string, cfg *restclient.Config) error {
+func (i *Installation) NewRequest(userID string, cfg *restclient.Config, logs *logging.Loggers) error {
+	i.loggers = logs
 	var iInfo []installationInfo
 	i.InstallationInfo = &iInfo
 	o := restclient.NewGetOperation().WithPath(instUrl).WithResponseTarget(i.InstallationInfo)
@@ -102,14 +105,17 @@ func (i *Installation) NewRequest(userID string, cfg *restclient.Config) error {
 		return errors.New(fmt.Sprintf("Error building ReST request to authenticate: %v", err))
 	}
 	i.Request = req
+	i.loggers.Info.Println("New installation request object configured")
 	return nil
 }
 
 func (i *Installation) process(a *authenticate.Authenticate) error {
 	// Details will not be refreshed. A restart would be needed.
 	if len(*i.InstallationInfo) > 0 {
+		i.loggers.Info.Println("Intallation information already available. Returning from cache. Restart required to refresh.")
 		return nil
 	}
+	i.loggers.Info.Println("Installation information not available. Requesting...")
 	err := a.Process()
 	if err != nil {
 		return err

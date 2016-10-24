@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"github.com/jcmturner/evohome-prometheus-export/authenticate"
 	"net/url"
+	"github.com/jcmturner/evohome-prometheus-export/logging"
 )
 
 const (
@@ -16,6 +17,7 @@ const (
 type Location struct {
 	Request         *restclient.Request
 	locationStatus
+	loggers		*logging.Loggers
 }
 
 type ZoneStatus struct {
@@ -55,8 +57,8 @@ type locationStatus struct {
 	} `json:"gateways"`
 }
 
-func (l *Location) NewRequest(id string, cfg *restclient.Config) error {
-
+func (l *Location) NewRequest(id string, cfg *restclient.Config, logs *logging.Loggers) error {
+	l.loggers = logs
 	data := url.Values{}
 	data.Set("includeTemperatureControlSystems", "True")
 	o := restclient.NewGetOperation().WithQueryDataURLValues(data).WithPath(fmt.Sprintf("%v/%v/status", apiurl, id))
@@ -66,14 +68,12 @@ func (l *Location) NewRequest(id string, cfg *restclient.Config) error {
 		return errors.New(fmt.Sprintf("Error building ReST request to authenticate: %v", err))
 	}
 	l.Request = req
+	l.loggers.Info.Println("New location request object configured")
 	return nil
 }
 
 func (l *Location) process(a *authenticate.Authenticate) error {
-	// Details will not be refreshed. A restart would be needed.
-	if l.LocationID != "" {
-		return nil
-	}
+	l.loggers.Info.Println("Requesting latest location and zone information.")
 	err := a.Process()
 	if err != nil {
 		return err

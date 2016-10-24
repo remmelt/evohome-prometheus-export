@@ -6,6 +6,7 @@ import (
 	"github.com/jcmturner/evohome-prometheus-export/authenticate"
 	"github.com/jcmturner/restclient"
 	"net/http"
+	"github.com/jcmturner/evohome-prometheus-export/logging"
 )
 
 const (
@@ -15,6 +16,7 @@ const (
 type UserAccount struct {
 	Request            *restclient.Request
 	userAccountDetails
+	loggers		*logging.Loggers
 }
 
 type userAccountDetails struct {
@@ -29,21 +31,25 @@ type userAccountDetails struct {
 	Language      string `json:"language"`
 }
 
-func (u *UserAccount) NewRequest(cfg *restclient.Config) error {
+func (u *UserAccount) NewRequest(cfg *restclient.Config, logs *logging.Loggers) error {
+	u.loggers = logs
 	o := restclient.NewGetOperation().WithPath(url).WithResponseTarget(u)
 	req, err := restclient.BuildRequest(cfg, o)
 	if err != nil {
 		return errors.New(fmt.Sprintf("Error building ReST request to authenticate: %v", err))
 	}
 	u.Request = req
+	u.loggers.Info.Println("New userAccount request object configured")
 	return nil
 }
 
 func (u *UserAccount) process(a *authenticate.Authenticate) error {
 	// Details will not be refreshed. A restart would be needed.
 	if u.UserID != "" {
+		u.loggers.Info.Println("UserID information already available. Returning from cache. Restart required to refresh.")
 		return nil
 	}
+	u.loggers.Info.Println("UserID information not available. Requesting...")
 	err := a.Process()
 	if err != nil {
 		return err
