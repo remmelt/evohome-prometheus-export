@@ -1,0 +1,1 @@
+The SSL certificate in this directory is the intermediate signing certificate of the EvoHome web service's certificate. This signing certificate is trusted by the evohome-prometheus-export process.
