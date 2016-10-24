@@ -9,12 +9,12 @@ import (
 )
 
 const (
-	url = "https://tccna.honeywell.com/WebAPI/emea/api/v1/userAccount"
+	url = "/WebAPI/emea/api/v1/userAccount"
 )
 
 type UserAccount struct {
 	Request            *restclient.Request
-	UserAccountDetails *userAccountDetails
+	userAccountDetails
 }
 
 type userAccountDetails struct {
@@ -29,10 +29,8 @@ type userAccountDetails struct {
 	Language      string `json:"language"`
 }
 
-func (u *UserAccount) NewRequest() error {
-	o := restclient.NewPostOperation()
-	o.WithPath(url)
-	cfg := restclient.NewConfig()
+func (u *UserAccount) NewRequest(cfg *restclient.Config) error {
+	o := restclient.NewGetOperation().WithPath(url).WithResponseTarget(u)
 	req, err := restclient.BuildRequest(cfg, o)
 	if err != nil {
 		return errors.New(fmt.Sprintf("Error building ReST request to authenticate: %v", err))
@@ -43,19 +41,21 @@ func (u *UserAccount) NewRequest() error {
 
 func (u *UserAccount) process(a *authenticate.Authenticate) error {
 	// Details will not be refreshed. A restart would be needed.
-	if u.UserAccountDetails != nil {
+	if u.UserID != "" {
 		return nil
 	}
-	a.Process()
+	err := a.Process()
+	if err != nil {
+		return err
+	}
 	u.Request.HTTPRequest.Header.Set("Authorization", a.IdentityHeaders.Authorization)
 	u.Request.HTTPRequest.Header.Set("applicationId", a.IdentityHeaders.ApplicationID)
-	a.Request.Operation.WithResponseTarget(&u.UserAccountDetails)
 	code, e := restclient.Send(u.Request)
 	if e != nil {
 		return e
 	}
 	if *code != http.StatusOK {
-		return errors.New(fmt.Sprintf("UserAccount error, got HTTP status %v rather than HTTP status %v from authentication call to %v.", *code, http.StatusOK, a.Request.HTTPRequest.URL.String()))
+		return errors.New(fmt.Sprintf("UserAccount error, got HTTP status %v rather than HTTP status %v from authentication call to %v.", *code, http.StatusOK, u.Request.HTTPRequest.URL.String()))
 	}
 	return nil
 }
@@ -63,71 +63,71 @@ func (u *UserAccount) process(a *authenticate.Authenticate) error {
 func (u *UserAccount) GetUserID(a *authenticate.Authenticate) (string, error) {
 	err := u.process(a)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-	return u.UserAccountDetails.UserID
+	return u.UserID, nil
 }
 
 func (u *UserAccount) GetCity(a *authenticate.Authenticate) (string, error) {
 	err := u.process(a)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-	return u.UserAccountDetails.City
+	return u.City, nil
 }
 
 func (u *UserAccount) GetCountry(a *authenticate.Authenticate) (string, error) {
 	err := u.process(a)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-	return u.UserAccountDetails.Country
+	return u.Country, nil
 }
 
 func (u *UserAccount) GetFirstname(a *authenticate.Authenticate) (string, error) {
 	err := u.process(a)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-	return u.UserAccountDetails.Firstname
+	return u.Firstname, nil
 }
 
 func (u *UserAccount) GetLanguage(a *authenticate.Authenticate) (string, error) {
 	err := u.process(a)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-	return u.UserAccountDetails.Language
+	return u.Language, nil
 }
 
 func (u *UserAccount) GetLastname(a *authenticate.Authenticate) (string, error) {
 	err := u.process(a)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-	return u.UserAccountDetails.Lastname
+	return u.Lastname, nil
 }
 
 func (u *UserAccount) GetPostcode(a *authenticate.Authenticate) (string, error) {
 	err := u.process(a)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-	return u.UserAccountDetails.Postcode
+	return u.Postcode, nil
 }
 
 func (u *UserAccount) GetStreetAddress(a *authenticate.Authenticate) (string, error) {
 	err := u.process(a)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-	return u.UserAccountDetails.StreetAddress
+	return u.StreetAddress, nil
 }
 
 func (u *UserAccount) GetUsername(a *authenticate.Authenticate) (string, error) {
 	err := u.process(a)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-	return u.UserAccountDetails.Username
+	return u.Username, nil
 }

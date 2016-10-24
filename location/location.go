@@ -6,15 +6,16 @@ import (
 	"fmt"
 	"net/http"
 	"github.com/jcmturner/evohome-prometheus-export/authenticate"
+	"net/url"
 )
 
 const (
-	url = "https://tccna.honeywell.com/WebAPI/emea/api/v1/location"
+	apiurl = "/WebAPI/emea/api/v1/location"
 )
 
 type Location struct {
 	Request         *restclient.Request
-	LocationStatus *LocationStatus
+	locationStatus
 }
 
 type ZoneStatus struct {
@@ -25,7 +26,7 @@ type ZoneStatus struct {
 	SetpointMode string
 }
 
-type LocationStatus struct {
+type locationStatus struct {
 	LocationID string `json:"locationId"`
 	Gateways []struct {
 		GatewayID string `json:"gatewayId"`
@@ -54,10 +55,12 @@ type LocationStatus struct {
 	} `json:"gateways"`
 }
 
-func (l *Location) NewRequest(id string) error {
-	o := restclient.NewPostOperation()
-	o.WithPath(fmt.Sprintf("%v/%v/status?includeTemperatureControlSystems=True", url, id))
-	cfg := restclient.NewConfig()
+func (l *Location) NewRequest(id string, cfg *restclient.Config) error {
+
+	data := url.Values{}
+	data.Set("includeTemperatureControlSystems", "True")
+	o := restclient.NewGetOperation().WithQueryDataURLValues(data).WithPath(fmt.Sprintf("%v/%v/status", apiurl, id))
+
 	req, err := restclient.BuildRequest(cfg, o)
 	if err != nil {
 		return errors.New(fmt.Sprintf("Error building ReST request to authenticate: %v", err))
@@ -68,19 +71,22 @@ func (l *Location) NewRequest(id string) error {
 
 func (l *Location) process(a *authenticate.Authenticate) error {
 	// Details will not be refreshed. A restart would be needed.
-	if l.LocationStatus != nil {
+	if l.LocationID != "" {
 		return nil
 	}
-	a.Process()
+	err := a.Process()
+	if err != nil {
+		return err
+	}
 	l.Request.HTTPRequest.Header.Set("Authorization", a.IdentityHeaders.Authorization)
 	l.Request.HTTPRequest.Header.Set("applicationId", a.IdentityHeaders.ApplicationID)
-	a.Request.Operation.WithResponseTarget(&l.LocationStatus)
+	l.Request.Operation.WithResponseTarget(l)
 	code, e := restclient.Send(l.Request)
 	if e != nil {
 		return e
 	}
 	if *code != http.StatusOK {
-		return errors.New(fmt.Sprintf("Location error, got HTTP status %v rather than HTTP status %v from authentication call to %v.", *code, http.StatusOK, a.Request.HTTPRequest.URL.String()))
+		return errors.New(fmt.Sprintf("Location error, got HTTP status %v rather than HTTP status %v from authentication call to %v.", *code, http.StatusOK, l.Request.HTTPRequest.URL.String()))
 	}
 	return nil
 }
@@ -90,8 +96,8 @@ func (l *Location) GetTemperatureControlSystemZonesStatus(a *authenticate.Authen
 	if err != nil {
 		return nil, err
 	}
-	zones:= make([]ZoneStatus, len(l.LocationStatus.Gateways[0].TemperatureControlSystems[0].Zones))
-	for i, z := range l.LocationStatus.Gateways[0].TemperatureControlSystems[0].Zones {
+	zones:= make([]ZoneStatus, len(l.Gateways[0].TemperatureControlSystems[0].Zones))
+	for i, z := range l.Gateways[0].TemperatureControlSystems[0].Zones {
 		zones[i] = ZoneStatus{
 			Name: z.Name,
 			ZoneID: z.ZoneID,
