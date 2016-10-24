@@ -9,11 +9,19 @@ import (
 	"fmt"
 	"os"
 	"github.com/jcmturner/evohome-prometheus-export/logging"
+	"net/http"
+	"github.com/jcmturner/evohome-prometheus-export/version"
+	"github.com/jcmturner/evohome-prometheus-export/handlers"
+)
+
+const (
+	HTTPPort = 8080
+	ServiceEndPoint = "https://tccna.honeywell.com"
 )
 
 func main() {
 	c := restclient.NewConfig()
-	c.WithEndPoint("https://tccna.honeywell.com")
+	c.WithEndPoint(ServiceEndPoint)
 	c.WithCAFilePath(os.Getenv("TRUST_CERT"))
 
 	logs, err := logging.LoggerSetUp()
@@ -52,16 +60,21 @@ func main() {
 	if err != nil {
 		logs.Error.Fatalf("Could not prepare location request: %v\n", err)
 	}
-	zones, err := l.GetTemperatureControlSystemZonesStatus(&a)
-	if err != nil {
-		logs.Error.Fatalf("Could not get zone information: %v\n", err)
-	}
 
-	for _, z := range zones {
-		logs.Info.Printf("Zone: %v\n", z.Name)
-		logs.Info.Printf("Target: %v\n", z.TargetTemperature)
-		logs.Info.Printf("Current: %v\n\n", z.CurrentTemperature)
-	}
+	//Set up handlers
+	mux := http.NewServeMux()
+	mux.HandleFunc("/zoneTemperatures", func(w http.ResponseWriter, r *http.Request) {
+		handlers.GetZoneTemperatures(w, &a, &l, logs)
+	})
 
+
+	logs.Info.Printf(`EvoHome to Prometheus - Configuration Complete:
+	Version: %s
+	Listenning Port: %v
+	Service URL: %s
+	CA Trust Path: %s`, version.Version, HTTPPort, ServiceEndPoint, os.Getenv("TRUST_CERT"))
+
+	err = http.ListenAndServe(fmt.Sprintf(":%v", HTTPPort), mux)
+	logs.Error.Fatalf("HTTP Server Exit: %v\n", err)
 }
 
