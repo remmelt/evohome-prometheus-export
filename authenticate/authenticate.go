@@ -28,6 +28,7 @@ type Authenticate struct {
 	authResponse
 	validUntil      time.Time
 	loggers		*logging.Loggers
+	postData	*url.Values
 }
 
 type authResponse struct {
@@ -48,6 +49,7 @@ func (a *Authenticate) NewRequest(cfg *restclient.Config, logs *logging.Loggers)
 	data.Set("scope", "EMEA-V1-Basic EMEA-V1-Anonymous EMEA-V1-Get-Current-User-Account")
 	data.Set("Username", os.Getenv("EVOHOME_USERNAME"))
 	data.Set("Password", os.Getenv("EVOHOME_PASSWORD"))
+	a.postData = &data
 
 	o := restclient.NewPostOperation().WithPath(authUrl).WithBodyDataURLValues(data).WithResponseTarget(a)
 
@@ -82,6 +84,13 @@ func (a *Authenticate) Process() error {
 }
 
 func (a *Authenticate) callAuthService() error {
+	//Have to build the request again as the send data gets closed.
+	req, err := restclient.BuildRequest(a.Request.Config, a.Request.Operation)
+	if err != nil {
+		return errors.New(fmt.Sprintf("Error building ReST request to authenticate: %v", err))
+	}
+	a.Request = req
+	a.loggers.Info.Println("New authentication request object configured")
 	code, e := restclient.Send(a.Request)
 	if e != nil {
 		return e
