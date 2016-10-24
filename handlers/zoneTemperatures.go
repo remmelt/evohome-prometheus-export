@@ -19,8 +19,8 @@ func GetZoneTemperatures(w http.ResponseWriter, a *authenticate.Authenticate, l 
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "text/plain; charset=UTF-8")
 	for _, z := range zones {
-		fmt.Fprintf(w, "current_temperature{label=%s} %v\n",z.Name, z.CurrentTemperature)
-		fmt.Fprintf(w, "target_temperature{label=%s} %v\n", z.Name, z.TargetTemperature)
+		fmt.Fprintf(w, "current_temperature{label=%q} %v\n",z.Name, z.CurrentTemperature)
+		fmt.Fprintf(w, "target_temperature{label=%q} %v\n", z.Name, z.TargetTemperature)
 	}
 	return
 }
