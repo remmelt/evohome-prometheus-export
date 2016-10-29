@@ -7,8 +7,14 @@ go get github.com/stretchr/testify/assert && \
 cd src/github.com/jcmturner/evohome-prometheus-export && \
 go test -v ./...
 if [ $? -ne 0 ]; then
-  echo "Golang tests failed"
+  echo "ERROR: Golang tests failed"
   exit 1
 fi
-go build -tags netgo && \
+go build -tags netgo
+if [ $? -ne 0 ]; then
+  echo "ERROR: Golang build failed"
+  exit 1
+fi
 mv evohome-prometheus-export /tmp/output/
+echo "Golang build completed successfully."
+echo "Binary located in the output directory"
