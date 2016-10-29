@@ -11,4 +11,4 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 go build -tags netgo && \
-mv evohome-prometheus-export /tmp/output
+mv evohome-prometheus-export /tmp/output/
