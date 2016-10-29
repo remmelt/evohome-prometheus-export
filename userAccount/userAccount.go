@@ -58,7 +58,7 @@ func (u *UserAccount) process(a *authenticate.Authenticate) error {
 	u.Request.HTTPRequest.Header.Set("applicationId", a.IdentityHeaders.ApplicationID)
 	code, e := restclient.Send(u.Request)
 	if e != nil {
-		return e
+		return errors.New(fmt.Sprintf("UserAccount error, HTTP code %v; %v", *code, e))
 	}
 	if *code != http.StatusOK {
 		return errors.New(fmt.Sprintf("UserAccount error, got HTTP status %v rather than HTTP status %v from authentication call to %v.", *code, http.StatusOK, u.Request.HTTPRequest.URL.String()))

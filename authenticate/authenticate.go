@@ -93,7 +93,7 @@ func (a *Authenticate) callAuthService() error {
 	a.loggers.Info.Println("New authentication request object configured")
 	code, e := restclient.Send(a.Request)
 	if e != nil {
-		return e
+		return errors.New(fmt.Sprintf("Authentication error, HTTP code %v; %v", *code, e))
 	}
 	if *code != http.StatusOK {
 		return errors.New(fmt.Sprintf("Authentication error, got HTTP status %v rather than HTTP status %v from authentication call to %v.", *code, http.StatusOK, a.Request.HTTPRequest.URL.String()))

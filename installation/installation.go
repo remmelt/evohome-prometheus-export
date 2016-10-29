@@ -124,10 +124,10 @@ func (i *Installation) process(a *authenticate.Authenticate) error {
 	i.Request.HTTPRequest.Header.Set("applicationId", a.IdentityHeaders.ApplicationID)
 	code, e := restclient.Send(i.Request)
 	if e != nil {
-		return e
+		return errors.New(fmt.Sprintf("Installation error, HTTP code %v; %v", *code, e))
 	}
 	if *code != http.StatusOK {
-		return errors.New(fmt.Sprintf("Location error, got HTTP status %v rather than HTTP status %v from authentication call to %v.", *code, http.StatusOK, i.Request.HTTPRequest.URL.String()))
+		return errors.New(fmt.Sprintf("Installation error, got HTTP status %v rather than HTTP status %v from authentication call to %v.", *code, http.StatusOK, i.Request.HTTPRequest.URL.String()))
 	}
 	return nil
 }

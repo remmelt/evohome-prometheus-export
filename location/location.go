@@ -83,7 +83,7 @@ func (l *Location) process(a *authenticate.Authenticate) error {
 	l.Request.Operation.WithResponseTarget(l)
 	code, e := restclient.Send(l.Request)
 	if e != nil {
-		return e
+		return errors.New(fmt.Sprintf("Location error, HTTP code %v; %v", *code, e))
 	}
 	if *code != http.StatusOK {
 		return errors.New(fmt.Sprintf("Location error, got HTTP status %v rather than HTTP status %v from authentication call to %v.", *code, http.StatusOK, l.Request.HTTPRequest.URL.String()))
