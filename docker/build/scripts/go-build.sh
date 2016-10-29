@@ -2,8 +2,8 @@
 
 export GOPATH=/tmp && \
 cd /tmp && \
-go get -d github.com/jcmturner/evohome-prometheus-export && \
-cd src/github.com/jcmturner/evohome-prometheus-export && \
+git clone https://github.com/jcmturner/evohome-prometheus-export.git
+cd evohome-prometheus-export && \
 go test -v ./...
 if [ $? -ne 0 ]; then
   echo "Golang tests failed"
