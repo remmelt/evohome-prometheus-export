@@ -273,5 +273,5 @@ func TestInstallation(t *testing.T) {
 	if err != nil {
 		t.Errorf("Failed to get temperature control zones: %v\n", err)
 	}
-	assert.True(t, len(zones) > 0, "System ID not as expected")
+	assert.True(t, len(zones) > 0, "Did not get any zones")
 }
