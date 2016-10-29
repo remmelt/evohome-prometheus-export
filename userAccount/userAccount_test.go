@@ -1,4 +1,4 @@
-package location
+package userAccount
 
 import (
 	"io/ioutil"
@@ -16,7 +16,6 @@ import (
 
 const (
 	accessToken = "bearer test-access-token"
-	locationId = "1234567"
 	evohomeUid      = "username@example.com"
 	evohomePassword = "somepassword"
 	authResponseData = `{
@@ -27,64 +26,20 @@ const (
   "scope": "EMEA-V1-Anonymous"
 }`
 	responseData = `{
-  "locationId": "1234567",
-  "gateways": [
-    {
-      "gatewayId": "1234567",
-      "temperatureControlSystems": [
-        {
-          "systemId": "1234567",
-          "zones": [
-            {
-              "zoneId": "1234567",
-              "temperatureStatus": {
-                "temperature": 22.5,
-                "isAvailable": true
-              },
-              "activeFaults": [],
-              "heatSetpointStatus": {
-                "targetTemperature": 22,
-                "setpointMode": "FollowSchedule"
-              },
-              "name": "Radiators"
-            },
-            {
-              "zoneId": "2345678",
-              "temperatureStatus": {
-                "temperature": 22.5,
-                "isAvailable": true
-              },
-              "activeFaults": [],
-              "heatSetpointStatus": {
-                "targetTemperature": 22,
-                "setpointMode": "FollowSchedule"
-              },
-              "name": "Kitchen"
-            }
-          ],
-          "activeFaults": [],
-          "systemModeStatus": {
-            "mode": "Auto",
-            "isPermanent": true
-          }
-        }
-      ],
-      "activeFaults": []
-    }
-  ]
+  "userId": "1234567",
+  "username": "username@example.com",
+  "firstname": "fname",
+  "lastname": "lname",
+  "streetAddress": "10 Downing St",
+  "city": "LONDON",
+  "postcode": "SW1A 2AA",
+  "country": "UnitedKingdom",
+  "language": "enGB"
 }`
 )
 
 func checkAuth(r *http.Request) bool {
 	if r.Header.Get("Authorization") == accessToken {
-		return true
-	}
-	return false
-}
-
-func checkQueryData(r *http.Request) bool {
-	v := r.URL.Query()
-	if v.Get("includeTemperatureControlSystems") == "True" {
 		return true
 	}
 	return false
@@ -105,16 +60,12 @@ func testAuthServer() *httptest.Server {
 func testServer() *httptest.Server {
 	s := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if checkAuth(r) {
-			if checkQueryData(r) {
 				w.Header().Set("Content-Type", "application/json;charset=UTF-8")
 				w.Header().Set("Cache-Control", "no-cache")
 				w.Header().Set("Expires", "-1")
 				w.Header().Set("Pragma", "no-cache")
 				w.WriteHeader(http.StatusOK)
 				fmt.Fprintln(w, responseData)
-			} else {
-				w.WriteHeader(http.StatusBadRequest)
-			}
 		} else {
 			w.WriteHeader(http.StatusUnauthorized)
 		}
@@ -122,7 +73,7 @@ func testServer() *httptest.Server {
 	return s
 }
 
-func TestLocation(t *testing.T) {
+func TestUserAccount(t *testing.T) {
 	os.Setenv("EVOHOME_USERNAME", evohomeUid)
 	os.Setenv("EVOHOME_PASSWORD", evohomePassword)
 	os.Setenv("LOG_LEVEL", "DEBUG")
@@ -159,15 +110,55 @@ func TestLocation(t *testing.T) {
 	c.WithEndPoint(s.URL)
 	c.WithCAFilePath(certOut.Name())
 
-	var l Location
-	err = l.NewRequest(locationId, c, logs)
+	var u UserAccount
+	err = u.NewRequest(c, logs)
 	if err != nil {
-		t.Fatalf("Could not prepare Location request: %v\n", err)
+		t.Fatalf("Could not prepare UserAccount request: %v\n", err)
 	}
-	zones, err := l.GetTemperatureControlSystemZonesStatus(&a)
+
+	uid, err := u.GetUserID(&a)
 	if err != nil {
-		t.Fatalf("Could not get temperature control system zones status: %v\n", err)
+		t.Fatalf("Could not get userID: %v\n", err)
 	}
-	assert.True(t, len(zones) > 0, "Did not get any zones")
-	assert.Equal(t, float32(22.5), zones[0].CurrentTemperature, "Current zone temperature not as expected")
+	assert.Equal(t, "1234567", uid, "UserID not as expected")
+	city, err := u.GetCity(&a)
+	if err != nil {
+		t.Fatalf("Could not get City: %v\n", err)
+	}
+	assert.Equal(t, "LONDON", city, "City not as expected")
+	country, err := u.GetCountry(&a)
+	if err != nil {
+		t.Fatalf("Could not get country: %v\n", err)
+	}
+	assert.Equal(t, "UnitedKingdom", country, "Country not as expected")
+	fn, err := u.GetFirstname(&a)
+	if err != nil {
+		t.Fatalf("Could not get first name: %v\n", err)
+	}
+	assert.Equal(t, "fname", fn, "First name not as expected")
+	ln, err := u.GetLastname(&a)
+	if err != nil {
+		t.Fatalf("Could not get last name: %v\n", err)
+	}
+	assert.Equal(t, "lname", ln, "Last name not as expected")
+	lang, err := u.GetLanguage(&a)
+	if err != nil {
+		t.Fatalf("Could not get language: %v\n", err)
+	}
+	assert.Equal(t, "enGB", lang, "Language not as expected")
+	pc, err := u.GetPostcode(&a)
+	if err != nil {
+		t.Fatalf("Could not get postcode: %v\n", err)
+	}
+	assert.Equal(t, "SW1A 2AA", pc, "Postcode not as expected")
+	sa, err := u.GetStreetAddress(&a)
+	if err != nil {
+		t.Fatalf("Could not get street address: %v\n", err)
+	}
+	assert.Equal(t, "10 Downing St", sa, "Street address not as expected")
+	uname, err := u.GetUsername(&a)
+	if err != nil {
+		t.Fatalf("Could not get username: %v\n", err)
+	}
+	assert.Equal(t, "username@example.com", uname, "Username not as expected")
 }
