@@ -3,12 +3,12 @@ package authenticate
 import (
 	"errors"
 	"fmt"
+	"github.com/jcmturner/evohome-prometheus-export/logging"
 	"github.com/jcmturner/restclient"
 	"net/http"
-	"time"
 	"net/url"
 	"os"
-	"github.com/jcmturner/evohome-prometheus-export/logging"
+	"time"
 )
 
 const (
@@ -26,9 +26,9 @@ type Authenticate struct {
 	Request         *restclient.Request
 	IdentityHeaders *idHeaders
 	authResponse
-	validUntil      time.Time
-	loggers		*logging.Loggers
-	postData	*url.Values
+	validUntil time.Time
+	loggers    *logging.Loggers
+	postData   *url.Values
 }
 
 type authResponse struct {
@@ -67,13 +67,13 @@ func (a *Authenticate) NewRequest(cfg *restclient.Config, logs *logging.Loggers)
 
 func (a *Authenticate) Process() error {
 	if a.AccessToken == "" || time.Now().After(a.validUntil) {
-		a.loggers.Info.Println("No OAuth token available or it has expired. Requeting one.")
+		a.loggers.Info.Println("No OAuth token available or it has expired. Requesting one.")
 		err := a.callAuthService()
 		if err != nil {
 			return err
 		}
 		id := idHeaders{
-			Authorization: fmt.Sprintf("bearer %s", a.AccessToken),
+			Authorization: fmt.Sprintf("%s %s", a.TokenType, a.AccessToken),
 			ApplicationID: applicationID,
 		}
 		a.IdentityHeaders = &id
