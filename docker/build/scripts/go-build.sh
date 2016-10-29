@@ -5,7 +5,6 @@ cd /tmp && \
 go get github.com/jcmturner/evohome-prometheus-export && \
 go get github.com/stretchr/testify/assert && \
 cd src/github.com/jcmturner/evohome-prometheus-export && \
-export GOPATH=$(pwd) && \
 go test -v ./...
 if [ $? -ne 0 ]; then
   echo "Golang tests failed"
