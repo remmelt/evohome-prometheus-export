@@ -6,6 +6,7 @@ On a system with docker installed:
 ```
 cd docker/build
 ./build.sh
+cd ..
 sudo docker build -t <image tag>
 ```
 ## Installation
