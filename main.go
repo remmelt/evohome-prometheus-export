@@ -8,11 +8,13 @@ import (
 	"github.com/jcmturner/evohome-prometheus-export/location"
 	"github.com/jcmturner/evohome-prometheus-export/logging"
 	"github.com/jcmturner/evohome-prometheus-export/userAccount"
-	"github.com/jcmturner/evohome-prometheus-export/version"
 	"github.com/jcmturner/restclient"
 	"net/http"
 	"os"
 )
+
+var githash = "No version available"
+var buildstamp = "Not set"
 
 const (
 	HTTPPort        = 8080
@@ -72,10 +74,11 @@ func main() {
 	})
 
 	logs.Info.Printf(`EvoHome to Prometheus - Configuration Complete:
-	Version: %s
+	Build hash: %s
+	Build timestap: %s
 	Listenning Port: %v
 	Service URL: %s
-	CA Trust Path: %s`, version.Version, HTTPPort, ServiceEndPoint, os.Getenv("TRUST_CERT"))
+	CA Trust Path: %s`, githash, buildstamp, HTTPPort, ServiceEndPoint, os.Getenv("TRUST_CERT"))
 
 	err = http.ListenAndServe(fmt.Sprintf(":%v", HTTPPort), mux)
 	logs.Error.Fatalf("HTTP Server Exit: %v\n", err)

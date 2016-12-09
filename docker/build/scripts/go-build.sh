@@ -10,7 +10,7 @@ if [ $? -ne 0 ]; then
   echo "ERROR: Golang tests failed"
   exit 1
 fi
-go build -tags netgo
+go build -ldflags "-X main.buildstamp=`date -u '+%FT%T%Z'` -X main.githash=`git rev-parse HEAD`" -tags netgo
 if [ $? -ne 0 ]; then
   echo "ERROR: Golang build failed"
   exit 1
