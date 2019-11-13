@@ -3,16 +3,17 @@ package handlers
 import (
 	"encoding/pem"
 	"fmt"
-	"github.com/jcmturner/restclient"
-	"github.com/remmelt/evohome-prometheus-export/authenticate"
-	"github.com/remmelt/evohome-prometheus-export/location"
-	"github.com/remmelt/evohome-prometheus-export/logging"
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
+
+	"github.com/jcmturner/restclient"
+	"github.com/remmelt/evohome-prometheus-export/authenticate"
+	"github.com/remmelt/evohome-prometheus-export/location"
+	"github.com/remmelt/evohome-prometheus-export/logging"
+	"github.com/stretchr/testify/assert"
 )
 
 const (
@@ -177,10 +178,10 @@ func TestLocation(t *testing.T) {
 	resp, _ := http.Get(s.URL)
 	defer resp.Body.Close()
 	body, _ := ioutil.ReadAll(resp.Body)
-	assert.Equal(t, string(body), `current_temperature{label="Radiators"} 22.5
-target_temperature{label="Radiators"} 22
-current_temperature{label="Kitchen"} 23.5
-target_temperature{label="Kitchen"} 23
+	assert.Equal(t, string(body), `evohome_current_temperature{label="Radiators"} 22.5
+evohome_target_temperature{label="Radiators"} 22
+evohome_current_temperature{label="Kitchen"} 23.5
+evohome_target_temperature{label="Kitchen"} 23
 `)
 
 }

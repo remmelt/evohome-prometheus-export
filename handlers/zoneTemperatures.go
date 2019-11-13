@@ -2,12 +2,14 @@ package handlers
 
 import (
 	"fmt"
+	"net/http"
+
 	"github.com/remmelt/evohome-prometheus-export/authenticate"
 	"github.com/remmelt/evohome-prometheus-export/location"
 	"github.com/remmelt/evohome-prometheus-export/logging"
-	"net/http"
 )
 
+// GetZoneTemperatures print zone temperature to prometheus format
 func GetZoneTemperatures(w http.ResponseWriter, a *authenticate.Authenticate, l *location.Location, logs *logging.Loggers) {
 	zones, err := l.GetTemperatureControlSystemZonesStatus(a)
 	if err != nil {
@@ -19,8 +21,8 @@ func GetZoneTemperatures(w http.ResponseWriter, a *authenticate.Authenticate, l 
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "text/plain; charset=UTF-8")
 	for _, z := range zones {
-		fmt.Fprintf(w, "current_temperature{label=%q} %v\n", z.Name, z.CurrentTemperature)
-		fmt.Fprintf(w, "target_temperature{label=%q} %v\n", z.Name, z.TargetTemperature)
+		fmt.Fprintf(w, "evohome_current_temperature{label=%q} %v\n", z.Name, z.CurrentTemperature)
+		fmt.Fprintf(w, "evohome_target_temperature{label=%q} %v\n", z.Name, z.TargetTemperature)
 	}
 	return
 }
