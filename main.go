@@ -2,29 +2,32 @@ package main
 
 import (
 	"fmt"
-	"github.com/jcmturner/evohome-prometheus-export/authenticate"
-	"github.com/jcmturner/evohome-prometheus-export/handlers"
-	"github.com/jcmturner/evohome-prometheus-export/installation"
-	"github.com/jcmturner/evohome-prometheus-export/location"
-	"github.com/jcmturner/evohome-prometheus-export/logging"
-	"github.com/jcmturner/evohome-prometheus-export/userAccount"
-	"github.com/jcmturner/restclient"
 	"net/http"
 	"os"
+
+	"github.com/jcmturner/restclient"
+	"github.com/remmelt/evohome-prometheus-export/authenticate"
+	"github.com/remmelt/evohome-prometheus-export/handlers"
+	"github.com/remmelt/evohome-prometheus-export/installation"
+	"github.com/remmelt/evohome-prometheus-export/location"
+	"github.com/remmelt/evohome-prometheus-export/logging"
+	"github.com/remmelt/evohome-prometheus-export/userAccount"
 )
 
 var githash = "No version available"
 var buildstamp = "Not set"
 
 const (
-	HTTPPort        = 8080
-	ServiceEndPoint = "https://tccna.honeywell.com"
+	serviceEndPoint = "https://tccna.honeywell.com"
 )
 
 func main() {
 	c := restclient.NewConfig()
-	c.WithEndPoint(ServiceEndPoint)
-	c.WithCAFilePath(os.Getenv("TRUST_CERT"))
+	c.WithEndPoint(serviceEndPoint)
+	certPath := os.Getenv("TRUST_CERT")
+	c.TrustCACert = &certPath
+	c.WithCAFilePath(certPath)
+
 	if err := c.Validate(); err != nil {
 		fmt.Fprintf(os.Stderr, "ERROR: Configuration of web service not valid: %v", err)
 		os.Exit(1)
@@ -73,13 +76,21 @@ func main() {
 		handlers.GetZoneTemperatures(w, &a, &l, logs)
 	})
 
+	httpPort := getEnv("SERVER_PORT", "8080")
 	logs.Info.Printf(`EvoHome to Prometheus - Configuration Complete:
 	Build hash: %s
 	Build timestap: %s
-	Listenning Port: %v
+	Listening Port: %s
 	Service URL: %s
-	CA Trust Path: %s`, githash, buildstamp, HTTPPort, ServiceEndPoint, os.Getenv("TRUST_CERT"))
+	CA Trust Path: %s`, githash, buildstamp, httpPort, serviceEndPoint, certPath)
 
-	err = http.ListenAndServe(fmt.Sprintf(":%v", HTTPPort), mux)
+	err = http.ListenAndServe(fmt.Sprintf(":%v", httpPort), mux)
 	logs.Error.Fatalf("HTTP Server Exit: %v\n", err)
+}
+
+func getEnv(key, fallback string) string {
+	if value, ok := os.LookupEnv(key); ok {
+		return value
+	}
+	return fallback
 }

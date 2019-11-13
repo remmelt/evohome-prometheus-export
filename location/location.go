@@ -1,13 +1,13 @@
 package location
 
 import (
-	"github.com/jcmturner/restclient"
 	"errors"
 	"fmt"
+	"github.com/jcmturner/restclient"
+	"github.com/remmelt/evohome-prometheus-export/authenticate"
+	"github.com/remmelt/evohome-prometheus-export/logging"
 	"net/http"
-	"github.com/jcmturner/evohome-prometheus-export/authenticate"
 	"net/url"
-	"github.com/jcmturner/evohome-prometheus-export/logging"
 )
 
 const (
@@ -15,43 +15,43 @@ const (
 )
 
 type Location struct {
-	Request         *restclient.Request
+	Request *restclient.Request
 	locationStatus
-	loggers		*logging.Loggers
+	loggers *logging.Loggers
 }
 
 type ZoneStatus struct {
-	Name string
-	ZoneID string
+	Name               string
+	ZoneID             string
 	CurrentTemperature float32
-	TargetTemperature float32
-	SetpointMode string
+	TargetTemperature  float32
+	SetpointMode       string
 }
 
 type locationStatus struct {
 	LocationID string `json:"locationId"`
-	Gateways []struct {
-		GatewayID string `json:"gatewayId"`
+	Gateways   []struct {
+		GatewayID                 string `json:"gatewayId"`
 		TemperatureControlSystems []struct {
 			SystemID string `json:"systemId"`
-			Zones []struct {
-				ZoneID string `json:"zoneId"`
+			Zones    []struct {
+				ZoneID            string `json:"zoneId"`
 				TemperatureStatus struct {
-					       Temperature float32 `json:"temperature"`
-					       IsAvailable bool `json:"isAvailable"`
-				       } `json:"temperatureStatus"`
-				ActiveFaults []interface{} `json:"activeFaults"`
+					Temperature float32 `json:"temperature"`
+					IsAvailable bool    `json:"isAvailable"`
+				} `json:"temperatureStatus"`
+				ActiveFaults       []interface{} `json:"activeFaults"`
 				HeatSetpointStatus struct {
-					       TargetTemperature float32 `json:"targetTemperature"`
-					       SetpointMode string `json:"setpointMode"`
-				       } `json:"heatSetpointStatus"`
+					TargetTemperature float32 `json:"targetTemperature"`
+					SetpointMode      string  `json:"setpointMode"`
+				} `json:"heatSetpointStatus"`
 				Name string `json:"name"`
 			} `json:"zones"`
-			ActiveFaults []interface{} `json:"activeFaults"`
+			ActiveFaults     []interface{} `json:"activeFaults"`
 			SystemModeStatus struct {
-					 Mode string `json:"mode"`
-					 IsPermanent bool `json:"isPermanent"`
-				 } `json:"systemModeStatus"`
+				Mode        string `json:"mode"`
+				IsPermanent bool   `json:"isPermanent"`
+			} `json:"systemModeStatus"`
 		} `json:"temperatureControlSystems"`
 		ActiveFaults []interface{} `json:"activeFaults"`
 	} `json:"gateways"`
@@ -96,14 +96,14 @@ func (l *Location) GetTemperatureControlSystemZonesStatus(a *authenticate.Authen
 	if err != nil {
 		return nil, err
 	}
-	zones:= make([]ZoneStatus, len(l.Gateways[0].TemperatureControlSystems[0].Zones))
+	zones := make([]ZoneStatus, len(l.Gateways[0].TemperatureControlSystems[0].Zones))
 	for i, z := range l.Gateways[0].TemperatureControlSystems[0].Zones {
 		zones[i] = ZoneStatus{
-			Name: z.Name,
-			ZoneID: z.ZoneID,
+			Name:               z.Name,
+			ZoneID:             z.ZoneID,
 			CurrentTemperature: z.TemperatureStatus.Temperature,
-			TargetTemperature: z.HeatSetpointStatus.TargetTemperature,
-			SetpointMode: z.HeatSetpointStatus.SetpointMode,
+			TargetTemperature:  z.HeatSetpointStatus.TargetTemperature,
+			SetpointMode:       z.HeatSetpointStatus.SetpointMode,
 		}
 	}
 	return zones, nil

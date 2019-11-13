@@ -1,24 +1,24 @@
 package installation
 
 import (
+	"encoding/pem"
 	"fmt"
+	"github.com/jcmturner/restclient"
+	"github.com/remmelt/evohome-prometheus-export/authenticate"
+	"github.com/remmelt/evohome-prometheus-export/logging"
+	"github.com/stretchr/testify/assert"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"testing"
-	"io/ioutil"
 	"os"
-	"encoding/pem"
-	"github.com/jcmturner/restclient"
-	"github.com/jcmturner/evohome-prometheus-export/logging"
-	"github.com/jcmturner/evohome-prometheus-export/authenticate"
-	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 const (
-	accessToken = "bearer test-access-token"
-	userId = "1234567"
-	evohomeUid      = "username@example.com"
-	evohomePassword = "somepassword"
+	accessToken      = "bearer test-access-token"
+	userId           = "1234567"
+	evohomeUid       = "username@example.com"
+	evohomePassword  = "somepassword"
 	authResponseData = `{
   "access_token": "test-access-token",
   "token_type": "bearer",
@@ -187,12 +187,12 @@ func checkQueryData(r *http.Request) bool {
 
 func testAuthServer() *httptest.Server {
 	s := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				w.Header().Set("Content-Type", "application/json;charset=UTF-8")
-				w.Header().Set("Cache-Control", "no-cache")
-				w.Header().Set("Expires", "-1")
-				w.Header().Set("Pragma", "no-cache")
-				w.WriteHeader(http.StatusOK)
-				fmt.Fprintln(w, authResponseData)
+		w.Header().Set("Content-Type", "application/json;charset=UTF-8")
+		w.Header().Set("Cache-Control", "no-cache")
+		w.Header().Set("Expires", "-1")
+		w.Header().Set("Pragma", "no-cache")
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintln(w, authResponseData)
 	}))
 	return s
 }

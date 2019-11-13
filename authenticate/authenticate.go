@@ -3,8 +3,8 @@ package authenticate
 import (
 	"errors"
 	"fmt"
-	"github.com/jcmturner/evohome-prometheus-export/logging"
 	"github.com/jcmturner/restclient"
+	"github.com/remmelt/evohome-prometheus-export/logging"
 	"net/http"
 	"net/url"
 	"os"

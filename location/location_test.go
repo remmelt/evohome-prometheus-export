@@ -1,24 +1,24 @@
 package location
 
 import (
-	"io/ioutil"
-	"os"
 	"encoding/pem"
-	"github.com/jcmturner/restclient"
-	"github.com/stretchr/testify/assert"
-	"net/http/httptest"
 	"fmt"
-	"github.com/jcmturner/evohome-prometheus-export/logging"
+	"github.com/jcmturner/restclient"
+	"github.com/remmelt/evohome-prometheus-export/authenticate"
+	"github.com/remmelt/evohome-prometheus-export/logging"
+	"github.com/stretchr/testify/assert"
+	"io/ioutil"
 	"net/http"
-	"github.com/jcmturner/evohome-prometheus-export/authenticate"
+	"net/http/httptest"
+	"os"
 	"testing"
 )
 
 const (
-	accessToken = "bearer test-access-token"
-	locationId = "1234567"
-	evohomeUid      = "username@example.com"
-	evohomePassword = "somepassword"
+	accessToken      = "bearer test-access-token"
+	locationId       = "1234567"
+	evohomeUid       = "username@example.com"
+	evohomePassword  = "somepassword"
 	authResponseData = `{
   "access_token": "test-access-token",
   "token_type": "bearer",

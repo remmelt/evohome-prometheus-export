@@ -1,25 +1,25 @@
 package handlers
 
 import (
-	"io/ioutil"
-	"os"
 	"encoding/pem"
-	"github.com/jcmturner/restclient"
-	"net/http/httptest"
 	"fmt"
-	"github.com/jcmturner/evohome-prometheus-export/logging"
-	"net/http"
-	"github.com/jcmturner/evohome-prometheus-export/authenticate"
-	"testing"
-	"github.com/jcmturner/evohome-prometheus-export/location"
+	"github.com/jcmturner/restclient"
+	"github.com/remmelt/evohome-prometheus-export/authenticate"
+	"github.com/remmelt/evohome-prometheus-export/location"
+	"github.com/remmelt/evohome-prometheus-export/logging"
 	"github.com/stretchr/testify/assert"
+	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"testing"
 )
 
 const (
-	accessToken = "bearer test-access-token"
-	locationId = "1234567"
-	evohomeUid      = "username@example.com"
-	evohomePassword = "somepassword"
+	accessToken      = "bearer test-access-token"
+	locationId       = "1234567"
+	evohomeUid       = "username@example.com"
+	evohomePassword  = "somepassword"
 	authResponseData = `{
   "access_token": "test-access-token",
   "token_type": "bearer",

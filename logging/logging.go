@@ -1,10 +1,10 @@
 package logging
 
 import (
-	"log"
-	"os"
 	"errors"
 	"fmt"
+	"log"
+	"os"
 )
 
 var validLogLevels = []string{"ERROR", "WARNING", "INFO", "DEBUG"}

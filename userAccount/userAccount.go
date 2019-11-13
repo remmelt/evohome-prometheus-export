@@ -3,10 +3,10 @@ package userAccount
 import (
 	"errors"
 	"fmt"
-	"github.com/jcmturner/evohome-prometheus-export/authenticate"
 	"github.com/jcmturner/restclient"
+	"github.com/remmelt/evohome-prometheus-export/authenticate"
+	"github.com/remmelt/evohome-prometheus-export/logging"
 	"net/http"
-	"github.com/jcmturner/evohome-prometheus-export/logging"
 )
 
 const (
@@ -14,9 +14,9 @@ const (
 )
 
 type UserAccount struct {
-	Request            *restclient.Request
+	Request *restclient.Request
 	userAccountDetails
-	loggers		*logging.Loggers
+	loggers *logging.Loggers
 }
 
 type userAccountDetails struct {

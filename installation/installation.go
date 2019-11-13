@@ -3,11 +3,11 @@ package installation
 import (
 	"errors"
 	"fmt"
-	"github.com/jcmturner/evohome-prometheus-export/authenticate"
 	"github.com/jcmturner/restclient"
+	"github.com/remmelt/evohome-prometheus-export/authenticate"
+	"github.com/remmelt/evohome-prometheus-export/logging"
 	"net/http"
 	"net/url"
-	"github.com/jcmturner/evohome-prometheus-export/logging"
 )
 
 const (
@@ -17,7 +17,7 @@ const (
 type Installation struct {
 	Request          *restclient.Request
 	InstallationInfo *[]installationInfo
-	loggers		*logging.Loggers
+	loggers          *logging.Loggers
 }
 
 type ZoneInfo struct {
@@ -63,8 +63,8 @@ type installationInfo struct {
 				ZoneID                   string `json:"zoneId"`
 				ModelType                string `json:"modelType"`
 				HeatSetpointCapabilities struct {
-					MaxHeatSetpoint      float32      `json:"maxHeatSetpoint"`
-					MinHeatSetpoint      float32      `json:"minHeatSetpoint"`
+					MaxHeatSetpoint      float32  `json:"maxHeatSetpoint"`
+					MinHeatSetpoint      float32  `json:"minHeatSetpoint"`
 					ValueResolution      float32  `json:"valueResolution"`
 					AllowedSetpointModes []string `json:"allowedSetpointModes"`
 					MaxDuration          string   `json:"maxDuration"`
@@ -134,7 +134,7 @@ func (i *Installation) process(a *authenticate.Authenticate) error {
 
 func (i *Installation) GetLocationID(a *authenticate.Authenticate) (string, error) {
 	err := i.process(a)
-	if err != nil  {
+	if err != nil {
 		return "", err
 	}
 	if len(*i.InstallationInfo) < 1 {
